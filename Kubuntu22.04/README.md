@@ -210,6 +210,12 @@ curl -Lo ripgrep.deb "https://github.com/BurntSushi/ripgrep/releases/latest/down
 sudo apt install -y ./ripgrep.deb
 ```
 
+### 安装ssh，vim
+sudo apt install vim
+sudo apt install openssh-server
+sudo systemctl start ssh
+sudo systemctl status ssh
+
 ### zsh 安装
 https://itslinuxfoss.com/how-to-install-zsh-in-ubuntu-22-04/#:~:text=To%20install%20Zsh%20in%20Ubuntu%2022.04%2C%20open%20the,the%20installation%20method%20of%20Zsh%20on%20Ubuntu%2022.04.
 
@@ -345,6 +351,27 @@ sudo chattr -RV +a /etc
 sudo chattr -RV -a /etc
 
 
+Step2： 特殊按键映射（mac机器可能用到）
+
+由于自己经常用mac，习惯了cmd用作ctrl，切换到ubuntu上，经常错按
+希望修改按键映射，达到目地如下：
+1. 左cmd和ctrl一样
+2. 由cmd和win功能一样
+
+ sain@Linux  ~  setxkbmap -print
+xkb_keymap {
+	xkb_keycodes  { include "evdev+aliases(qwerty)"	};
+	xkb_types     { include "complete+numpad(mac)"	};
+	xkb_compat    { include "complete"	};
+	xkb_symbols   { include "pc+macintosh_vndr/us+inet(evdev)+altwin(ctrl_win)"	};
+	xkb_geometry  { include "macintosh(macbook78)"	};
+};
+
+
+修改 /usr/share/X11/xkb/symbols/altwin
+
+
+
 ## 数据备份
 
 ### 快照备份
@@ -354,7 +381,7 @@ https://www.learndiary.com/2021/11/snapshot-of-lvm/
 没有安装软件，完成基本分区
 sudo lvcreate -s -L 16000M -n rootsnap20221006 /dev/mapper/vgkubuntu-root -v
 
-安装完全部软件(除了AndroidStudio)
+安装完全部软件(包括AndroidStudio，配置完全调整好)
 sudo lvcreate -s -L 16000M -n rootsnap20221007_allapp /dev/mapper/vgkubuntu-root -v
 
 ### 物理备份
