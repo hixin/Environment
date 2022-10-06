@@ -1,7 +1,30 @@
+## 系统安装
+https://blog.csdn.net/weixin_44410537/article/details/110672115
 
 
+Step1:
+选择默认的LVM安装，最小安装
+
+默认的LVM根文件系统会使用整个磁盘,安装完成后，拔掉U盘，正常启动，到了登录页面直接关机。
+
+Step2：插上U盘重启进入U盘试用系统
+
+因为缩容需要卸载根分区，所以需要在u盘系统上进行,终端执行lsblk，可以看到创建VG vgkubuntu，并创建了两个lv root和swap_1
+
+缩容操作不建议使用lvreduce，对原理不熟悉的话很容易导致无法开机，建议直接使用无损工具
+
+```
+# 扩充比较容易 /dev/mapper/vgkubuntu-root 和 /dev/vgkubuntu/root 是一回事
+# sudo lvextend -L +4G /dev/mapper/vgkubuntu-root
+```
 
 
+Step3：关机拔掉U盘，重启进入安装系统
+
+创建逻辑分区home, 将来挂在home
+
+lvcreate -l +90%FREE -n home vgkubuntu
+mkfs -t ext4 /dev/mapper/vgkubuntu-home
 
 ## 软件安装
 
@@ -174,11 +197,9 @@ sain@Linux  /usr/share/sangfor/EasyConnect  ldd EasyConnect | grep pango
  sudo cp easyconnectpatch/* /usr/share/sangfor/EasyConnect/
 ```
 
-### 投屏软件
+### 投屏软件vysor
 
-占坑，待补充
-
-
+(echo 'deb [arch=amd64, trusted=yes] https://nuts.vysor.io/apt ./' | sudo tee /etc/apt/sources.list.d/vysor.list) && sudo apt update && sudo apt install vysor
 
 ### ripgrep安装
 ```
@@ -326,6 +347,61 @@ sudo chattr -RV -a /etc
 
 ## 数据备份
 
-除了做快照备份，还做下物理备份
+### 快照备份
+
+https://www.learndiary.com/2021/11/snapshot-of-lvm/
+
+没有安装软件，完成基本分区
+sudo lvcreate -s -L 16000M -n rootsnap20221006 /dev/mapper/vgkubuntu-root -v
+
+安装完全部软件(除了AndroidStudio)
+sudo lvcreate -s -L 16000M -n rootsnap20221007_allapp /dev/mapper/vgkubuntu-root -v
+
+### 物理备份
+
+ubunut 每次装完，配置环境，装软件很麻烦。把和软件相关的目录全都备份一下
+
 Step 1：etc opt snap usr 目录使用tar打包
+
+tar: etc/security/opasswd: Cannot open: Permission denied
+需要root权限才可以， tar -cpvf
+
+```
+cd /
+su
+tar -cvpf /home/sain/etc_opt_snap_usr.tar etc opt snap usr
+```
+
+
 Step 2：新建home_backup 目录， 将home目录下所有隐藏文件拷贝一份， 然后使用tar打包
+
+先要清空回收站
+~/.local/share/Trash
+```
+
+
+mkdir home_back
+cd
+cp -a -r .* home_back/
+# du -sh .* | sort -rh (复制完，可以先看下各目录大小，避免备份回收站)
+tar -cvf home_backup.tar home_backup
+```
+
+Step3： 其它备份
+
+其他home目录的备份，可以自己用tar包的方式
+
+### 恢复
+
+Step1：
+
+etc_opt_snap_usr.tar 用于覆盖etc opt snap usr目录
+tar -xvpf（解压命令要加p）
+
+恢复的时候,记得目标机的/etc/fstab 要保留, 一般不能直接覆盖
+
+
+Step2：
+home_backup.tar 用于覆盖用户目录下的隐藏文件
+
+
