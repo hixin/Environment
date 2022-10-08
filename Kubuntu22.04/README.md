@@ -210,6 +210,63 @@ curl -Lo ripgrep.deb "https://github.com/BurntSushi/ripgrep/releases/latest/down
 sudo apt install -y ./ripgrep.deb
 ```
 
+
+### docker 安装和环境搭建
+https://zhuanlan.zhihu.com/p/344082401
+
+https://docs.docker.com/engine/install/ubuntu/#set-up-the-repository
+```
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+```
+Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+
+```
+systemctl start docker
+systemctl status docker
+```
+
+Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get "http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/json": dial unix /var/run/docker.sock: connect: permission denied
+```
+sudo usermod -aG docker $USER
+newgrp docker
+systemctl restart docker
+# 或者service docker restart
+
+```
+```
+docker pull ultraji/ubuntu-xfce-novnc
+
+```
+### multipass安装
+https://multipass.run/install
+装上22.04 有些编译就遍不过了,是和libc.so有关系,不是很好解决. 保留一套18.04 的环境
+
+Step1: 创建dev虚拟机
+multipass launch 18.04 -n dev -c 4 -m 4G -d 6G
+
+
+Step2: 目录映射
+multipass mount /home/sain/work/01code dev:/home/ubuntu/01code
+
+Step3: 进入虚拟机
+multipass shell dev
+
+
+
 ### 安装ssh，vim
 sudo apt install vim
 sudo apt install openssh-server
@@ -303,20 +360,6 @@ Ubuntu18.10开始qemu是一个空包，应该安装qemu-system-x86
 ```sudo apt install qemu-system-x86```
 
 
-### docker 安装和环境搭建
-https://zhuanlan.zhihu.com/p/344082401
-
-Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
-```
-systemctl start docker
-systemctl status docker
-```
-
-```
-sudo docker pull ultraji/ubuntu-xfce-novnc
-
-
-```
 
 ## 配置调整
 
@@ -382,7 +425,7 @@ https://www.learndiary.com/2021/11/snapshot-of-lvm/
 sudo lvcreate -s -L 16000M -n rootsnap20221006 /dev/mapper/vgkubuntu-root -v
 
 安装完全部软件(包括AndroidStudio，配置完全调整好)
-sudo lvcreate -s -L 16000M -n rootsnap20221007_allapp /dev/mapper/vgkubuntu-root -v
+sudo lvcreate -s -L 18000M -n rootsnap20221007_allapp /dev/mapper/vgkubuntu-root -v
 
 ### 物理备份
 
